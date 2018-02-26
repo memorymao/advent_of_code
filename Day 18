@@ -1,0 +1,66 @@
+def opInputs():
+    inputs = open('./advent2017/input18.txt','r').readlines()
+    dicop ={}
+    for i in range(len(inputs)):
+        dicop[i] = inputs[i].split()
+    return dicop
+
+def program(selfID):
+    k=0
+    dicres ={'p': selfID}
+    def getarg(s):
+        try :
+            r = int(s)
+        except ValueError :
+            r = dicres[s] if s in dicres else 0
+        return r
+    dicop = opInputs()
+    sends =0
+    deadlock =0
+    while (k < len(dicop)) & (k >= 0):
+        arg = dicop[k]
+        print(selfID, 'INS', k, arg)
+        k +=1
+        if arg[0] == 'set' :
+            dicres[arg[1]] = getarg(arg[2])
+        elif arg[0] == 'snd' :
+            with lock:
+                rcv[1-selfID].append(getarg(arg[1]))  
+                sends += 1
+                print(selfID, 'sends', rcv)
+        elif arg[0] == 'rcv' :
+                while len(rcv[selfID])== 0 :
+                    time.sleep(5)
+                    if (len(rcv[1-selfID])== 0) & (len(rcv[selfID])== 0) :
+                        deadlock = 1
+                        break
+                if deadlock : break
+                n = rcv[selfID].pop(0)
+                if n != 'END' :   
+                    dicres[arg[1]] = n
+                print(selfID, 'rcv', rcv)
+        elif arg[0] == 'add' :
+            if arg[1] not in dicres : dicres[arg[1]] = 0
+            dicres[arg[1]] += getarg(arg[2])
+        elif arg[0] == 'mul' :
+            if arg[1] in dicres : dicres[arg[1]] *= getarg(arg[2])
+        elif arg[0] == 'mod' :
+            if arg[1] in dicres : dicres[arg[1]] %= getarg(arg[2])
+        elif arg[0] == 'jgz' :
+            if getarg(arg[1]) > 0 :  k += (getarg(arg[2])-1)
+                
+    with lock:
+        rcv[1-selfID].append('END')
+        #print(selfID, dicres)
+        print(selfID, sends, rcv)
+
+import time        
+import threading
+global rcv
+rcv = [[],[]]  # rcv0 :sended from program 1, and received by program 0 ; rcv1 : sended from program 0, and received by program 1
+global lock
+lock=threading.Lock()
+thn0=threading.Thread(target=program,name='program', args=(0,))
+thn1=threading.Thread(target=program,name='program', args=(1,))
+thn0.start()
+thn1.start()

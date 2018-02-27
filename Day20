@@ -1,0 +1,63 @@
+def getData():
+    inputs = open('./advent2017/input20.txt','r').readlines()
+    for i in range(len(inputs)): 
+        inputs[i] = inputs[i].replace('\n','')
+        inputs[i] = inputs[i][3:(len(inputs[i])-1)]
+        inputs[i] = list(map(int,inputs[i].replace('>, v=<',',').replace('>, a=<',',').replace(',',' ').split()))
+    return inputs
+
+def Manhattan(tri): # Manhattan distance
+    return sum(abs(s) for s in tri)
+
+def closest(inputs): # p = (a/2)t*t+ (v0+a/2)t +p0  (Vt = v0+ at and Pt = (P0+V1) + V2 +... + Vt )
+    # acceleration : p'' = a  find the smallest p''
+    dis = {} 
+    for i, k in enumerate(inputs):  dis[i] = Manhattan(k[6:9])
+    minaccset = list(filter(lambda x:min(dis.values())==dis[x],dis))
+    if len(minaccset)==1 :  return minaccset
+    # velocity : with the same acc, p' = at+v0+a/2 =0  --> max(abs(t)) is with the max v0
+    disv = {} 
+    for i in minaccset: 
+        s = inputs[i]
+        disv[i] = Manhattan([s[3]*s[6],s[4]*s[7],s[5]*s[8]] )
+    minvecset = list(filter(lambda x:max(disv.values())==disv[x],disv))
+    if len(minvecset)==1 :  return minvecset
+    # position : with the same acc & vec, p depends on p0
+    disp = {}
+    for i in minvecset: disp[i] = Manhattan(k[0:3])
+    minpos = filter(lambda x:min(disp.values())==disp[x],disp)[0]
+    return minpos
+
+def position(k, t): 
+    return tuple([int(k[i]+k[i+3]*t+k[i+6]*t*(t+1)/2) for i in range(3)])
+
+def oneCollide(inputs, t, dictcoll):
+    dictpos = {} #{ position : line}
+    for i, k in enumerate(inputs):
+        if i in dictcoll : continue
+        p = position(k, t)
+        if p not in dictpos:
+            dictpos[p] = i
+        else:
+            dictcoll[dictpos[p]] = t
+            dictcoll[i] = t
+    return dictcoll
+
+def collides(inputs):
+    dictcoll = {} #{ line in inputs : collide time}
+    collen = len(dictcoll)
+    wait = 0 # too complicated to track the distance between every two Particles
+    t =0
+    while True :
+        dictcoll = oneCollide(inputs, t, dictcoll)  
+        t +=1
+        if collen < len(dictcoll) : 
+            collen = len(dictcoll)
+        else :
+            wait += 1     
+        if wait == 100 : break
+    return collen
+                                 
+inputs = getData()
+print(closest(inputs))
+print(len(inputs)-collides(inputs))

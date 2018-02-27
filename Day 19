@@ -1,0 +1,45 @@
+def direction(curlabel, curd, x, y):
+    global inputs
+    global letters
+    global HEADINGS
+    LABELS = set(['|', '+', '-'])
+    x += curd[0]
+    y += curd[1]
+    if (0<= x < len(inputs)) & (0 <= y < len(inputs[0])):
+        #print(curlabel, x, y)
+        s = inputs[x][y]
+        if s == '+' :
+            result = []
+            for d in HEADINGS :
+                if (0<= (x+d[0]) < len(inputs)) & (0<= (y+d[1]) < len(inputs[0])):
+                    if (inputs[x+d[0]][y+d[1]] != ' ') & (d != [(0-curd[0]),(0-curd[1])]) :
+                        if (inputs[x+d[0]][y+d[1]] != '+') :
+                            return inputs[x][y], d, x, y
+                        else :
+                            result.append(inputs[x][y], d, x, y)
+            if len(result) != 0 : return result.pop()
+            return 'END', [0,0], x, y
+        else :
+            if (s == ' ') or (s == '') : return 'END', [0,0], x, y
+            if s not in LABELS : letters += s
+            return curlabel, curd, x, y
+    else:
+        return 'END', [0,0], x, y
+
+    
+HEADINGS = [UP, LEFT, DOWN, RIGHT]= [[-1, 0], [0, -1], [1, 0], [0, 1] ]
+inputs = open('./advent2017/input19.txt','r').readlines()
+for i in range(len(inputs)): inputs[i]= inputs[i].replace('\n','')
+letters = ''
+steps = 0
+curlabel = '|'
+curd = DOWN
+x =0
+y = inputs[x].index('|')
+while curlabel != 'END' :
+    #print(curlabel, curd, x, y, letters, steps)
+    steps += 1
+    curlabel, curd, x, y = direction(curlabel, curd, x, y)
+    
+    
+print(letters, steps)

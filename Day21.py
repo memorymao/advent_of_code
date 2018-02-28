@@ -1,9 +1,3 @@
-
-# coding: utf-8
-
-# In[284]:
-
-
 import numpy as np
 
 def graghToNum(s):  # the map rule for image to number
@@ -58,13 +52,4 @@ def enhance(iteration):
 global after
 global before
 before, after = getData()
-print(np.sum(enhance(5)==1))
-
-
-# In[282]:
-
-
-m = [[0,1,0],[0,0,1],[1,1,1]]
-s ='.'.join(m)
-s
-
+print(np.sum(enhance(18)==1))
